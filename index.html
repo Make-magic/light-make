@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+	<meta name="viewport" content="width=device-width">
+	<meta name="author" content="程序喵">
+	<meta name="keywords" content="程序喵,ibloger.net,在线生成光效图,光效生成器,在线光效编辑器">
+	<meta name="description" content="程序喵光效在线生成是一款在线生成光效的应用，操作简单，自定义光效，拖动鼠标就可以制作非常漂亮的光效图片，在线制作完成之后直接点击保存，对着缩略图单机右键即可保存了。">
+	<link rel="shortcut icon"  type="image/x-icon" href="img/favicon.ico">
+
+	<meta property="og:image" content="img/silk_thumb.png" />
+	<link rel="image_src" type="image/png" href="img/silk_thumb.png" />
+
+	<meta property="og:description"content="Create beautiful flowing art with Silk."/>
+	<link rel="stylesheet" href="css/normalize.css" />
+	<link rel="stylesheet" href="css/font-awesome.min.css" />
+	<link rel="stylesheet" href="css/ss-social.css" />
+	<link rel="stylesheet" href="css/site.css" />
+	<title>程序喵光效在线生成-ibloger.NET</title>
+	<script src="js/jquery.min.js"></script>
+	<script src="js/jquery.fullscreen.js"></script>
+	<script src="js/underscore.min.js"></script>
+	<script src="js/knockout-2.2.0.min.js"></script>
+	<script src="js/d3.v3.min.js"></script>
+	<script src="js/keymaster.js"></script>
+	<script src="js/noise.js"></script>
+	<script src="js/detect.js"></script>
+	<script src="js/site.js"></script>
+</head>
+
+<body data-bind="css: { 'iphone': isIPhone, 'right-side-up': isRightSideUp, 'silk-active': silkActive, 'mouse-over-previewable-controls': mouseOverControls, 'mouse-down-on-slider': mouseDownOnSlider }">
+	
+	
+	<div id="fb-root"></div>
+
+	<div id="canvii-container">
+
+
+		<div id="main-controls" class="controls-container"> 
+			<div class="row btn-row share-btn-row">
+				<div class="btn"  data-bind="click: clear, css: { visible: notPristine }">
+					<span class="text">新建</span>
+				</div>
+
+				<div>
+					<div class="btn" onClick="window.open('http://www.ibloger.net')" data-bind="css: { visible: showShareButton}">
+						返回首页
+					</div>
+					
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="btn silk-icon" data-bind="click: toggleFullscreen, css: { visible: notPristine }">
+					<div class="contents">全屏</div>
+					<div class="tt" data-bind="visible: isFullscreen">退出全屏</div>
+					
+				</div>
+
+				<div class="btn silk-icon" data-bind="click: download, css: { visible: notPristine }">
+					<div class="contents">保存</div>
+					
+				</div>
+
+				<div class="btn silk-icon" data-bind="click: toggleAllControls, css: { visible: notPristine }">
+					<div class="contents">设置</div>
+					
+				</div>
+
+				<div class="btn silk-icon" data-bind="click: undo, css: { visible: notPristine, 'flip-icon': nextUndoIsRedo }">
+					<div class="contents">撤销</div>
+					
+				</div>
+			</div>
+
+			<div class="row controls-row download-row" data-bind="css: { visible: showDownload }">
+				<p class="instructions">选择缩略图单击右键 <em>图像另存为…</em>.</p>
+				<img id="download-image" />
+			</div>
+
+			<div class="row controls-row color-and-symmetry-row" data-bind="css: { visible: showColorPicker }">
+				<svg id="colorpicker">
+
+				</svg>
+				<div class="label" style="text-align: center;">拖动颜色圈到对应颜色<br/>渐变颜色</div>
+
+				<div id="symmetry-controls">
+					<div class="one-d slider control" id="sym-num-rotations">
+						<div class="slider-bg">
+							<div class="ticks">
+								<div class="tick one"></div>
+								<div class="tick two"></div>
+								<div class="tick three"></div>
+								<div class="tick four"></div>
+								<div class="tick five"></div>
+								<div class="tick six"></div>
+							</div>
+							<div class="slider-bg-pc"></div>
+						</div>
+						<div class="handle"></div>
+						<div class="ghost-handle"></div>
+					</div>
+
+					<div id="sym-num-rotations-label" class="label"></div>
+
+					<div class="toggle control" id="toggle-mirror" data-bind="click: toggleMirror, css: { on: mirror }">
+						<div class="description">对称</div>
+						<div class="state"><span class="state-on">开</span><span class="state-off">关</span></div>
+					</div>
+
+					<div class="toggle control" id="toggle-spiral" data-bind="click: toggleSpiral, css: { on: spiral }">
+						<div class="description">螺旋</div>
+						<div class="state"><span class="state-on">开</span><span class="state-off">关</span></div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+
+
+		
+		<canvas id="silk-1" class="silk-canvas active"></canvas>
+		<canvas id="silk-2" class="silk-canvas buffer"></canvas>
+		<canvas id="sparks"></canvas>
+
+	</div>
+
+	<div id="replay-thumbnail" data-bind="css: { visible: showingReplayThumbnail }, click: hideReplayThumbnail ">
+		<img data-bind="attr: { src: shareUrlThumbnail }" width="150" />
+		<div class="tt">隐藏缩略图</div>
+	</div>
+	
+	<div id="intro-center" data-bind="css: { visible: showIntro }">
+		<img class="logo" src="img/silk_text.png" width="300" height="300" />
+	</div>
+
+	<div id="intro-draw-something" data-bind="css: { visible: showIntro }">
+		<!-- <div id="instructions">Draw something.</div> -->
+		<img class="draw-something" src="img/draw_something.png" width="250" height="29" />
+	</div>
+	<div id="intro-mute-option" data-bind="css: { visible: showIntro }">
+		<em>炫光在线制作</em></div>
+
+	<div id="tips">
+		<div class="tip">拖动你的鼠标吧！少年</div>
+		<div class="tip">拖动你的鼠标吧！少年</div>
+
+		<!-- <div class="tip"><i class="icon-undo"></i> lets you travel back in time.</div> -->
+		<!-- <div class="tip"><i class="icon-circle"></i> unlocks colors and symmetries.</div> -->
+
+		<div class="magic tip">拖动你的鼠标吧！少年</div>
+		<div class="tip">拖动你的鼠标吧！少年</div>
+	</div>
+
+</body>
+</html>
